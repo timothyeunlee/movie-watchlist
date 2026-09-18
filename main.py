@@ -9,6 +9,7 @@ import argparse
 #features
 from features.movie_cache import *
 from features.search_movie import *
+from features.add_watchlist_movie import *
 
 # added a limit parameter, in case we wanted to fetch X number of movies 
 def fetch_movies_from_db(connection, limit):
@@ -186,6 +187,9 @@ def main():
     add_parser = subparsers.add_parser("add")
     add_parser.add_argument("title", nargs="+")
 
+    delete_parser = subparsers.add_parser("delete", help="Remove a movie from the watchlist")
+    delete_parser.add_argument("title", nargs="+", help="Movie title to remove")
+
     args = parser.parse_args()
 
     # main logic 
@@ -195,7 +199,10 @@ def main():
         print_search_movie_by_title_result(movie_data)
     elif args.command == "add":
         movie_title = " ".join(args.title)
-        # add_to_watchlist(omdb_api_key, movie_title)
+        add_to_watchlist(omdb_api_key, movie_title)
+    elif args.command == "delete":
+        movie_title = " ".join(args.title)
+        delete_from_watchlist(omdb_api_key, movie_title)
     else:
         run_movie_watchlist(omdb_api_key)
 
