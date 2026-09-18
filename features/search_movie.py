@@ -2,6 +2,19 @@ import requests
 
 from features.common import redact
 
+'''
+    Feature: 
+        Search movie by movie title 
+            - command: python3 main.py search [movie-title]
+        Returns movie:
+            Title,
+            Year Released,
+            Rating,
+            Runtime,
+            Genre,
+            Director 
+'''
+
 def search_movie_by_title(omdb_api_key, movie_title):
     try:
         response = requests.get(
