@@ -4,6 +4,14 @@ from datetime import datetime, timezone
 
 from features.search_movie import search_movie_by_title
 
+'''
+    Feature: 
+        Add movie to watchlist by movie title 
+            - python3 main.py add la la land
+        Delete movie from watchlist by movie title
+            - python3 main.py delete la la land
+'''
+
 def add_to_watchlist(omdb_api_key, movie_title):
     try:
         movie = search_movie_by_title(omdb_api_key, movie_title)
