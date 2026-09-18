@@ -4,9 +4,11 @@ import os
 from contextlib import closing
 from dotenv import load_dotenv
 from datetime import datetime
+import argparse
 
 #features
 from features.movie_cache import *
+from features.search_movie import *
 
 # added a limit parameter, in case we wanted to fetch X number of movies 
 def fetch_movies_from_db(connection, limit):
@@ -23,11 +25,10 @@ def fetch_movies_from_db(connection, limit):
 
     return cursor.fetchall()
 
-def get_recent_movies_from_omdb(connection, imdb_movies, cache_ttl_hours):
+def get_recent_movies_from_omdb(connection, omdb_api_key, imdb_movies, cache_ttl_hours):
     if not imdb_movies:
         return []
 
-    omdb_api_key = os.environ["OMDB_API_KEY"]
     results = []
 
     for movie in imdb_movies:
@@ -136,34 +137,66 @@ def print_final_result(result):
         # Once Upon a Time in the West        | 1969 | 8.5  | 2024-01-25 09:00:00
 
 
-def main():
+def run_movie_watchlist(omdb_api_key):
     try:
-        load_dotenv()
-
         fetch_movie_limit = 10
-        CACHE_TTL_HOURS = 24
+        cache_ttl_hours = 24
 
-        with closing(sqlite3.connect('movies.db')) as connection:
+        with closing(sqlite3.connect("movies.db")) as connection:
             connection.row_factory = sqlite3.Row
-            # clear_movie_cache(connection)
+
             create_cache_table(connection)
-            movies = fetch_movies_from_db(connection, fetch_movie_limit)
+
+            movies = fetch_movies_from_db(
+                connection,
+                fetch_movie_limit
+            )
+
             omdb_result = get_recent_movies_from_omdb(
                 connection,
+                omdb_api_key,
                 movies,
-                CACHE_TTL_HOURS
+                cache_ttl_hours
             )
+
             sorted_movies = sorted(
                 omdb_result,
-                key=lambda m: (
-                    m['imdb_rating'] is None,
-                    -(m['imdb_rating'] or 0)
+                key=lambda movie: (
+                    movie["imdb_rating"] is None,
+                    -(movie["imdb_rating"] or 0)
                 )
             )
+
             print_final_result(sorted_movies)
 
     except Exception as e:
-        print(f'Exception: {e}')
+        print(f"Exception: {e}")
+
+def main():
+    load_dotenv()
+    omdb_api_key = os.environ["OMDB_API_KEY"]
+
+    parser = argparse.ArgumentParser()
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    search_parser = subparsers.add_parser("search")
+    search_parser.add_argument("title", nargs="+")
+
+    add_parser = subparsers.add_parser("add")
+    add_parser.add_argument("title", nargs="+")
+
+    args = parser.parse_args()
+
+    # main logic 
+    if args.command == "search":
+        movie_title = " ".join(args.title)
+        search_movie_by_title(omdb_api_key, movie_title)
+    elif args.command == "add":
+        movie_title = " ".join(args.title)
+        # add_to_watchlist(omdb_api_key, movie_title)
+    else:
+        run_movie_watchlist(omdb_api_key)
 
 if __name__ == "__main__":
     main()
