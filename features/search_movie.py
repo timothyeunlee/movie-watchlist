@@ -21,17 +21,20 @@ def search_movie_by_title(omdb_api_key, movie_title):
             )
             return
 
-        print(
-            f"Title: {data['Title']} | "
-            f"Year Released: {data['Year']} | "
-            f"Rated: {data['Rated']} | "
-            f"Runtime: {data['Runtime']} | "
-            f"Genre: {data['Genre']} | "
-            f"Director: {data['Director']}"
-        )
+        return data
 
     except requests.RequestException as e:
         print(f"Request failed: {e}")
 
     except Exception as e:
         print(f"Error grabbing movie details: {e}")
+
+def print_search_movie_by_title_result(data):
+    print(
+        f"Title: {data['Title']} | "
+        f"Year Released: {data['Year']} | "
+        f"Rated: {data['Rated']} | "
+        f"Runtime: {data['Runtime']} | "
+        f"Genre: {data['Genre']} | "
+        f"Director: {data['Director']}"
+    )

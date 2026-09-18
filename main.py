@@ -191,7 +191,8 @@ def main():
     # main logic 
     if args.command == "search":
         movie_title = " ".join(args.title)
-        search_movie_by_title(omdb_api_key, movie_title)
+        movie_data = search_movie_by_title(omdb_api_key, movie_title)
+        print_search_movie_by_title_result(movie_data)
     elif args.command == "add":
         movie_title = " ".join(args.title)
         # add_to_watchlist(omdb_api_key, movie_title)
