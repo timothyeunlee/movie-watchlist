@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 import argparse
 
-#features
+from features.common import connect, redact
 from features.movie_cache import *
 from features.search_movie import *
 from features.add_watchlist_movie import *
@@ -61,7 +61,8 @@ def get_recent_movies_from_omdb(connection, omdb_api_key, imdb_movies, cache_ttl
                     continue
 
             response = requests.get(
-                f"http://www.omdbapi.com/?i={imdb_id}&apikey={omdb_api_key}",
+                "https://www.omdbapi.com/",
+                params={"i": imdb_id, "apikey": omdb_api_key},
                 timeout=10
             )
 
@@ -102,10 +103,13 @@ def get_recent_movies_from_omdb(connection, omdb_api_key, imdb_movies, cache_ttl
             })
 
         except requests.RequestException as e:
-            print(f"Request failed for {imdb_id}: {e}")
+            print(f"Request failed for {imdb_id}: {redact(e, omdb_api_key)}")
             continue
         except Exception as e:
-            print(f"Error grabbing movie details for {imdb_id}: {e}")
+            print(
+                f"Error grabbing movie details for {imdb_id}: "
+                f"{redact(e, omdb_api_key)}"
+            )
             continue
 
     return results
@@ -143,7 +147,7 @@ def run_movie_watchlist(omdb_api_key):
         fetch_movie_limit = 10
         cache_ttl_hours = 24
 
-        with closing(sqlite3.connect("movies.db")) as connection:
+        with closing(connect()) as connection:
             connection.row_factory = sqlite3.Row
 
             create_cache_table(connection)
@@ -171,7 +175,7 @@ def run_movie_watchlist(omdb_api_key):
             print_final_result(sorted_movies)
 
     except Exception as e:
-        print(f"Exception: {e}")
+        print(f"Exception: {redact(e, omdb_api_key)}")
 
 def main():
     load_dotenv()
@@ -196,7 +200,8 @@ def main():
     if args.command == "search":
         movie_title = " ".join(args.title)
         movie_data = search_movie_by_title(omdb_api_key, movie_title)
-        print_search_movie_by_title_result(movie_data)
+        if movie_data:
+            print_search_movie_by_title_result(movie_data)
     elif args.command == "add":
         movie_title = " ".join(args.title)
         add_to_watchlist(omdb_api_key, movie_title)

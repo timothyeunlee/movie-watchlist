@@ -1,5 +1,7 @@
 import requests
 
+from features.common import redact
+
 def search_movie_by_title(omdb_api_key, movie_title):
     try:
         response = requests.get(
@@ -24,17 +26,20 @@ def search_movie_by_title(omdb_api_key, movie_title):
         return data
 
     except requests.RequestException as e:
-        print(f"Request failed: {e}")
+        print(f"Request failed: {redact(e, omdb_api_key)}")
 
     except Exception as e:
-        print(f"Error grabbing movie details: {e}")
+        print(f"Error grabbing movie details: {redact(e, omdb_api_key)}")
 
 def print_search_movie_by_title_result(data):
+    if not data:
+        return
+
     print(
-        f"Title: {data['Title']} | "
-        f"Year Released: {data['Year']} | "
-        f"Rated: {data['Rated']} | "
-        f"Runtime: {data['Runtime']} | "
-        f"Genre: {data['Genre']} | "
-        f"Director: {data['Director']}"
+        f"Title: {data.get('Title', 'N/A')} | "
+        f"Year Released: {data.get('Year', 'N/A')} | "
+        f"Rated: {data.get('Rated', 'N/A')} | "
+        f"Runtime: {data.get('Runtime', 'N/A')} | "
+        f"Genre: {data.get('Genre', 'N/A')} | "
+        f"Director: {data.get('Director', 'N/A')}"
     )

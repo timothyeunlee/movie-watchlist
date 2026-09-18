@@ -1,7 +1,8 @@
 import sqlite3
 from contextlib import closing
-from datetime import datetime, timezone
+from datetime import datetime
 
+from features.common import connect
 from features.search_movie import search_movie_by_title
 
 '''
@@ -22,7 +23,7 @@ def add_to_watchlist(omdb_api_key, movie_title):
 
         movie_id = movie["imdbID"]
 
-        with closing(sqlite3.connect("movies.db")) as connection:
+        with closing(connect()) as connection:
             connection.row_factory = sqlite3.Row
 
             existing_movie = connection.execute(
@@ -62,7 +63,7 @@ def delete_from_watchlist(omdb_api_key, movie_title):
 
         movie_id = movie["imdbID"]
 
-        with closing(sqlite3.connect("movies.db")) as connection:
+        with closing(connect()) as connection:
             cursor = connection.execute(
                 "DELETE FROM watchlist WHERE imdb_id = ?",
                 (movie_id,)
